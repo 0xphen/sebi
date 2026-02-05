@@ -1,0 +1,10 @@
+[workspace.package]
+edition = "2024"
+
+[workspace]
+members = ["crates/sebi-cli","crates/sebi-core"]
+
+resolver = "2"
+
+[workspace.dependencies]
+wasmparser = "0.244.0"
