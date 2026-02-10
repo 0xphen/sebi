@@ -1,8 +1,29 @@
+//! SEBI rule catalog.
+//!
+//! Defines the authoritative, static set of execution-boundary rules used by
+//! SEBI to interpret extracted WASM signals into risk classifications.
+//!
+//! This module is intentionally declarative:
+//! - no WASM parsing
+//! - no instruction inspection
+//! - no runtime inference
+//!
+//! Rules operate only on schema-defined signals and are evaluated by
+//! `rules::eval`.
+
 use serde::{Deserialize, Serialize};
 
+/// Stable identifier for a rule.
+///
+/// Rule IDs are globally unique, stable across releases,
+/// and never reused once published.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub struct RuleId(pub String);
 
+/// Fixed severity level assigned to a rule.
+///
+/// Ordering is semantic and relied upon by classification logic:
+/// `LOW < MED < HIGH`.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Severity {
     LOW,
@@ -10,14 +31,30 @@ pub enum Severity {
     HIGH,
 }
 
+/// Static metadata describing a SEBI rule.
+///
+/// Contains no trigger logic or evaluation state.
+/// Rule evaluation is performed by mapping signals to these definitions.
 #[derive(Debug, Clone)]
 pub struct RuleDef {
+    /// Unique rule identifier (e.g. `R-MEM-01`)
     pub id: RuleId,
+
+    /// Severity associated with the rule
     pub severity: Severity,
+
+    /// Short human-readable title
     pub title: &'static str,
+
+    /// Explanation emitted when the rule is triggered
     pub message: &'static str,
 }
 
+/// Returns the complete SEBI rule catalog.
+///
+/// The catalog is deterministic and immutable.
+/// Changes to rule semantics or identifiers require
+/// explicit review and a catalog version bump.
 pub fn catalog() -> Vec<RuleDef> {
     vec![
         RuleDef {
@@ -58,6 +95,7 @@ mod tests {
     use super::*;
     use std::collections::HashSet;
 
+    /// Ensures rule identifiers remain globally unique.
     #[test]
     fn rule_ids_are_unique() {
         let rules = catalog();
@@ -72,6 +110,7 @@ mod tests {
         }
     }
 
+    /// Locks in the intended severity ordering.
     #[test]
     fn severity_ordering_is_low_to_high() {
         assert!(Severity::LOW < Severity::MED);
