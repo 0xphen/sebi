@@ -211,4 +211,20 @@ mod tests {
 
         assert_eq!(first_ids, second_ids);
     }
+
+    #[test]
+    fn sort_exports_tie_break_on_kind() {
+        let mut exports = vec![
+            ExportFact {
+                name: "start".to_string(),
+                kind: "table".to_string(),
+            },
+            ExportFact {
+                name: "start".to_string(),
+                kind: "func".to_string(),
+            },
+        ];
+        sort_exports(&mut exports);
+        assert_eq!(exports[0].kind, "func"); // "f" comes before "t"
+    }
 }
