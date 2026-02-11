@@ -21,6 +21,18 @@ pub enum RuleId {
     RSize01,
 }
 
+impl RuleId {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            RuleId::RMem01 => "R-MEM-01",
+            RuleId::RMem02 => "R-MEM-02",
+            RuleId::RCall01 => "R-CALL-01",
+            RuleId::RLoop01 => "R-LOOP-01",
+            RuleId::RSize01 => "R-SIZE-01",
+        }
+    }
+}
+
 impl std::fmt::Display for RuleId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let s = match self {
