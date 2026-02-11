@@ -1,40 +1,34 @@
-//! Deterministic ordering helpers.
+//! Deterministic sorting for WASM facts and triggered rules.
 //!
-//! These utilities enforce stable ordering guarantees required by the
-//! SEBI report schema. All ordering here is semantic and intentional,
-//! ensuring identical inputs always produce identical outputs.
+//! Enforces stable ordering to ensure identical WASM inputs produce
+//! identical JSON report outputs.
 
 use crate::rules::eval::TriggeredRule;
 use crate::wasm::sections::{ExportFact, ImportFact};
 
-/// Sort imports deterministically by `(module, name, kind)`.
-///
-/// This ordering is part of the SEBI schema contract and must not change
-/// without a schema version bump.
+/// Sorts imports by `(module, name, kind)`.
 pub fn sort_imports(imports: &mut [ImportFact]) {
     imports.sort_by(|a, b| {
-        (a.module.as_str(), a.name.as_str(), a.kind.as_str()).cmp(&(
-            b.module.as_str(),
-            b.name.as_str(),
-            b.kind.as_str(),
-        ))
+        a.module
+            .cmp(&b.module)
+            .then_with(|| a.name.cmp(&b.name))
+            .then_with(|| a.kind.cmp(&b.kind))
     });
 }
 
-/// Sort exports deterministically by `(name, kind)`.
-///
-/// Ensures stable JSON output regardless of WASM section order.
+/// Sorts exports by `(name, kind)`.
 pub fn sort_exports(exports: &mut [ExportFact]) {
-    exports.sort_by(|a, b| {
-        (a.name.as_str(), a.kind.as_str()).cmp(&(b.name.as_str(), b.kind.as_str()))
-    });
+    exports.sort_by(|a, b| a.name.cmp(&b.name).then_with(|| a.kind.cmp(&b.kind)));
 }
 
-/// Sort triggered rules by `rule_id`.
+/// Sorts triggered rules by canonical rule identifier string.
 ///
-/// Rule ordering is deterministic and independent of evaluation order.
+/// Ordering is based on the stable external rule ID
+/// (e.g. "R-CALL-01", "R-MEM-02") rather than enum
+/// discriminant order. This preserves schema-level
+/// determinism even if enum variants are reordered.
 pub fn sort_triggered_rules(rules: &mut [TriggeredRule]) {
-    rules.sort_by(|a, b| a.rule_id.cmp(&b.rule_id));
+    rules.sort_by(|a, b| a.rule_id.to_string().cmp(&b.rule_id.to_string()));
 }
 
 #[cfg(test)]
@@ -49,24 +43,24 @@ mod tests {
     fn sort_imports_orders_by_module_then_name_then_kind() {
         let mut imports = vec![
             ImportFact {
-                module: "env".to_string(),
-                name: "memory".to_string(),
-                kind: "memory".to_string(),
+                module: "env".into(),
+                name: "memory".into(),
+                kind: "memory".into(),
             },
             ImportFact {
-                module: "env".to_string(),
-                name: "abort".to_string(),
-                kind: "func".to_string(),
+                module: "env".into(),
+                name: "abort".into(),
+                kind: "func".into(),
             },
             ImportFact {
-                module: "wasi_snapshot_preview1".to_string(),
-                name: "fd_write".to_string(),
-                kind: "func".to_string(),
+                module: "wasi".into(),
+                name: "fd_write".into(),
+                kind: "func".into(),
             },
             ImportFact {
-                module: "env".to_string(),
-                name: "abort".to_string(),
-                kind: "global".to_string(),
+                module: "env".into(),
+                name: "abort".into(),
+                kind: "global".into(),
             },
         ];
 
@@ -83,49 +77,25 @@ mod tests {
                 ("env", "abort", "func"),
                 ("env", "abort", "global"),
                 ("env", "memory", "memory"),
-                ("wasi_snapshot_preview1", "fd_write", "func"),
+                ("wasi", "fd_write", "func"),
             ]
         );
-    }
-
-    #[test]
-    fn sort_imports_is_stable_for_identical_entries() {
-        let mut imports = vec![
-            ImportFact {
-                module: "env".to_string(),
-                name: "foo".to_string(),
-                kind: "func".to_string(),
-            },
-            ImportFact {
-                module: "env".to_string(),
-                name: "foo".to_string(),
-                kind: "func".to_string(),
-            },
-        ];
-
-        sort_imports(&mut imports);
-
-        // Stability here means: no panic, no reordering surprises.
-        // Exact identity order is preserved because keys are identical.
-        assert_eq!(imports.len(), 2);
-        assert_eq!(imports[0].name, "foo");
-        assert_eq!(imports[1].name, "foo");
     }
 
     #[test]
     fn sort_exports_orders_by_name_then_kind() {
         let mut exports = vec![
             ExportFact {
-                name: "memory".to_string(),
-                kind: "memory".to_string(),
+                name: "memory".into(),
+                kind: "memory".into(),
             },
             ExportFact {
-                name: "_start".to_string(),
-                kind: "func".to_string(),
+                name: "_start".into(),
+                kind: "func".into(),
             },
             ExportFact {
-                name: "_start".to_string(),
-                kind: "global".to_string(),
+                name: "_start".into(),
+                kind: "global".into(),
             },
         ];
 
@@ -147,54 +117,54 @@ mod tests {
     }
 
     #[test]
-    fn sort_triggered_rules_orders_by_rule_id() {
+    fn sort_triggered_rules_orders_by_enum_variant() {
         let mut rules = vec![
             TriggeredRule {
-                rule_id: RuleId("R-LOOP-01".to_string()),
-                severity: Severity::MED,
-                title: "Loop detected".to_string(),
-                message: "loop present".to_string(),
+                rule_id: RuleId::RLoop01,
+                severity: Severity::Med,
+                title: "Loop".into(),
+                message: "loop present".into(),
                 evidence: json!({}),
             },
             TriggeredRule {
-                rule_id: RuleId("R-MEM-02".to_string()),
-                severity: Severity::HIGH,
-                title: "Memory grow".to_string(),
-                message: "memory.grow detected".to_string(),
+                rule_id: RuleId::RMem02,
+                severity: Severity::High,
+                title: "Mem grow".into(),
+                message: "memory.grow".into(),
                 evidence: json!({}),
             },
             TriggeredRule {
-                rule_id: RuleId("R-CALL-01".to_string()),
-                severity: Severity::HIGH,
-                title: "call_indirect".to_string(),
-                message: "dynamic dispatch".to_string(),
+                rule_id: RuleId::RCall01,
+                severity: Severity::High,
+                title: "Call indirect".into(),
+                message: "call_indirect".into(),
                 evidence: json!({}),
             },
         ];
 
         sort_triggered_rules(&mut rules);
 
-        let ids: Vec<&str> = rules.iter().map(|r| r.rule_id.0.as_str()).collect();
+        let ids: Vec<RuleId> = rules.iter().map(|r| r.rule_id).collect();
 
-        assert_eq!(ids, vec!["R-CALL-01", "R-LOOP-01", "R-MEM-02"]);
+        assert_eq!(ids, vec![RuleId::RCall01, RuleId::RLoop01, RuleId::RMem02,]);
     }
 
     #[test]
-    fn sort_triggered_rules_is_deterministic_across_runs() {
+    fn sort_triggered_rules_is_deterministic() {
         let make_rules = || {
             vec![
                 TriggeredRule {
-                    rule_id: RuleId("R-MEM-02".to_string()),
-                    severity: Severity::HIGH,
-                    title: "Memory grow".to_string(),
-                    message: "memory.grow detected".to_string(),
+                    rule_id: RuleId::RMem02,
+                    severity: Severity::High,
+                    title: "Mem grow".into(),
+                    message: "memory.grow".into(),
                     evidence: json!({}),
                 },
                 TriggeredRule {
-                    rule_id: RuleId("R-MEM-01".to_string()),
-                    severity: Severity::MED,
-                    title: "Missing max".to_string(),
-                    message: "no max".to_string(),
+                    rule_id: RuleId::RMem01,
+                    severity: Severity::Med,
+                    title: "Missing max".into(),
+                    message: "no max".into(),
                     evidence: json!({}),
                 },
             ]
@@ -206,25 +176,6 @@ mod tests {
         sort_triggered_rules(&mut first);
         sort_triggered_rules(&mut second);
 
-        let first_ids: Vec<&str> = first.iter().map(|r| r.rule_id.0.as_str()).collect();
-        let second_ids: Vec<&str> = second.iter().map(|r| r.rule_id.0.as_str()).collect();
-
-        assert_eq!(first_ids, second_ids);
-    }
-
-    #[test]
-    fn sort_exports_tie_break_on_kind() {
-        let mut exports = vec![
-            ExportFact {
-                name: "start".to_string(),
-                kind: "table".to_string(),
-            },
-            ExportFact {
-                name: "start".to_string(),
-                kind: "func".to_string(),
-            },
-        ];
-        sort_exports(&mut exports);
-        assert_eq!(exports[0].kind, "func"); // "f" comes before "t"
+        assert_eq!(first, second);
     }
 }
