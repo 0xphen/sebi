@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 /// Raw observations extracted from a WASM artifact.
 /// Maps to the `signals` object in the SEBI report schema.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Signals {
     pub module: ModuleSignals,
     pub memory: MemorySignals,
@@ -11,7 +11,7 @@ pub struct Signals {
 }
 
 /// Structural facts derived from WASM sections.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ModuleSignals {
     /// Count of defined functions; excludes imports.
     pub function_count: u32,
@@ -19,7 +19,7 @@ pub struct ModuleSignals {
 }
 
 /// Declared memory boundaries and configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct MemorySignals {
     pub memory_count: u32,
     /// Size in 64 KiB pages.
@@ -31,7 +31,7 @@ pub struct MemorySignals {
 
 /// Summary of external interfaces.
 /// Lists are sorted deterministically if present.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ImportExportSignals {
     pub import_count: u32,
     pub export_count: u32,
@@ -55,7 +55,7 @@ pub struct ExportItem {
 }
 
 /// Capability indicators detected during function body scanning.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct InstructionSignals {
     pub has_memory_grow: bool,
     pub memory_grow_count: u64,
