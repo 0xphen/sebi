@@ -16,7 +16,6 @@ pub struct ParseConfig {
 
 impl Default for ParseConfig {
     fn default() -> Self {
-        // Conservative default; can be tuned or made configurable via CLI later.
         Self {
             size_threshold_bytes: 200_000,
         }
