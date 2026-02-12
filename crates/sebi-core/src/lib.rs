@@ -12,7 +12,6 @@ use anyhow::Result;
 use report::model::{Report, ToolInfo};
 use std::path::Path;
 
-/// Primary tool identity.
 pub const TOOL_NAME: &str = "SEBI";
 
 /// Schema version for generated JSON reports.
