@@ -13,7 +13,7 @@ Rules are **deterministic, explainable, and policy-driven**.
 ## Relationship to Report Schema
 
 This rule catalog operates **exclusively on signals defined in the SEBI report schema**, as specified in
-[`docs/SCHEMA.md`](docs/SCHEMA.md).
+[`SCHEMA.md`](./SCHEMA.md).
 
 Rules:
 
