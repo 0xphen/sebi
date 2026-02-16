@@ -239,18 +239,20 @@ This rule flags **potential analysis uncertainty**, not infinite execution.
 
 ### R-SIZE-01 — Large WASM Artifact
 
-| Field          | Value                        |
-| -------------- | ---------------------------- |
-| **Rule ID**    | `R-SIZE-01`                  |
-| **Severity**   | MED or HIGH (policy-defined) |
-| **Category**   | Complexity                   |
-| **Applies to** | Artifact-level               |
+| Field          | Value          |
+| -------------- | -------------- |
+| **Rule ID**    | `R-SIZE-01`    |
+| **Severity**   | MED            |
+| **Category**   | Complexity     |
+| **Applies to** | Artifact-level |
 
 #### Trigger condition
 
 ```
 artifact.size_bytes > SIZE_THRESHOLD
 ```
+
+The default `SIZE_THRESHOLD` is **200,000 bytes** (approximately 195 KiB).
 
 #### Schema dependencies
 
@@ -268,7 +270,7 @@ Size is used as a **proxy signal**, not a direct risk indicator.
 
 #### Notes
 
-The size threshold is **policy-configurable** and not hard-coded into the rule definition.
+The size threshold defaults to 200,000 bytes and is defined in the `ParseConfig` struct at compile time.
 
 ---
 
@@ -279,8 +281,7 @@ Rules are combined using a **transparent, deterministic policy**.
 ### Default policy
 
 * If **any HIGH** severity rule is triggered → `HIGH_RISK`
-* Else if **two or more MED** severity rules are triggered → `RISK`
-* Else if **one MED** severity rule is triggered → `RISK`
+* Else if **any MED** severity rule is triggered → `RISK`
 * Else → `SAFE`
 
 This policy is the authoritative source for populating the `classification` object defined in `SCHEMA.md`.

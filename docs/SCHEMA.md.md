@@ -225,7 +225,7 @@ Runtime and parsing status information.
 
 | Field      | Type   | Description                                           |
 | ---------- | ------ | ----------------------------------------------------- |
-| `status`   | string | `"ok" \| "parse_error" \| "unsupported" \| "partial"` |
+| `status`   | string | `"ok" \| "parse_error" \| "unsupported"` |
 | `warnings` | array  | Sorted list of warning messages                       |
 
 This section provides **diagnostic context only** and must not affect rule evaluation.
@@ -256,7 +256,7 @@ Each item contains:
 | Field      | Type   | Description                |
 | ---------- | ------ | -------------------------- |
 | `rule_id`  | string | Unique rule identifier     |
-| `severity` | string | `"LOW" \| "MED" \| "HIGH"` |
+| `severity` | string | `"Low" \| "Med" \| "High"` |
 | `title`    | string | Short rule name            |
 | `message`  | string | Human-readable explanation |
 | `evidence` | object | Key-value evidence         |
@@ -274,7 +274,7 @@ Final verdict derived from triggered rules.
 | `level`              | string  | `"SAFE" \| "RISK" \| "HIGH_RISK"`    |
 | `policy`             | string  | Classification policy identifier     |
 | `reason`             | string  | Summary explanation                  |
-| `highest_severity`   | string  | `"NONE" \| "LOW" \| "MED" \| "HIGH"` |
+| `highest_severity`   | string  | `"NONE" \| "Low" \| "Med" \| "High"` |
 | `triggered_rule_ids` | array   | Sorted list of rule IDs              |
 | `exit_code`          | integer | CI exit code (`0`, `1`, `2`)         |
 

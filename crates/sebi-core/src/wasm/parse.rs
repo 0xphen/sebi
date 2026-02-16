@@ -82,7 +82,6 @@ pub fn parse_wasm(bytes: &[u8]) -> Result<RawWasmFacts> {
     let parser = Parser::new(0);
 
     for payload in parser.parse_all(bytes) {
-        println!("payload: {:?}", payload);
         match payload {
             // Module header/version. Presence indicates a well-formed WASM prefix.
             Ok(Payload::Version { .. }) => {}

@@ -1,5 +1,5 @@
-use crate::report::model::Report;
 use crate::TOOL_NAME;
+use crate::report::model::Report;
 
 pub fn render_text(report: &Report) -> String {
     let mut out = String::new();
