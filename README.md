@@ -1,6 +1,6 @@
 # SEBI - Stylus Execution Boundary Inspector
 
-SEBI is a deterministic, static analysis engine for [Stylus](https://docs.arbitrum.io/stylus/gentle-introduction)-compiled WASM smart contracts. It inspects WebAssembly binaries **before deployment** to detect execution-boundary risks - without executing the contract or relying on chain state.
+SEBI is a deterministic, static analysis engine for Stylus compiled WASM smart contracts. It inspects WebAssembly binaries **before deployment** to detect execution-boundary risks - without executing the contract or relying on chain state.
 
 SEBI produces stable, explainable JSON reports that help developers, auditors, and infrastructure providers reason about execution safety before a contract goes on-chain.
 
