@@ -193,9 +193,6 @@ pub fn on_export_section(facts: &mut SectionFacts, reader: ExportSectionReader) 
     Ok(())
 }
 
-/// Processes the Function section.
-///
-/// Counts only *defined* functions (imports excluded).
 pub fn on_function_section(facts: &mut SectionFacts, reader: FunctionSectionReader) -> Result<()> {
     facts.function_count = facts.function_count.saturating_add(reader.count());
     Ok(())
@@ -237,8 +234,6 @@ mod tests {
     use super::*;
     use wasmparser::{Parser, Payload};
 
-    /// Utility to parse all sections of a WASM binary into SectionFacts.
-    /// Used to simulate a full extraction pass during testing.
     fn parse_wasm(wat: &str) -> SectionFacts {
         let wasm = wat::parse_str(wat).expect("Failed to parse WAT");
         let mut facts = SectionFacts::default();
@@ -256,8 +251,6 @@ mod tests {
         facts
     }
 
-    /// Verifies that imported memory (index 0) takes precedence over internal declarations.
-    /// This is a critical invariant for security boundary rules.
     #[test]
     fn test_memory_precedence_import_vs_internal() {
         let facts = parse_wasm(
@@ -272,11 +265,9 @@ mod tests {
         assert_eq!(facts.memory_min_pages, Some(1));
         assert_eq!(facts.memory_max_pages, Some(3));
         assert!(facts.memory_has_max);
-        assert_eq!(facts.memory_count, 2); // Both are counted, but first sets limits
+        assert_eq!(facts.memory_count, 2);
     }
 
-    /// Exercises the compact import encoding logic (Imports::Compact1/Compact2).
-    /// Validates that grouped imports are correctly flattened and sorted.
     #[test]
     fn test_compact_imports_variants() {
         let facts = parse_wasm(
@@ -293,13 +284,10 @@ mod tests {
         assert_eq!(facts.import_count, 4);
         assert_eq!(facts.memory_count, 1);
 
-        // Ensure sorting is applied across different modules and names
         let names: Vec<String> = facts.imports.iter().map(|i| i.name.clone()).collect();
         assert_eq!(names, vec!["f1", "f2", "m1", "exit"]); // "env" module items come before "os"
     }
 
-    /// Ensures that modules with no memory are correctly represented with None/0 states.
-    /// This directly impacts Rule R-MEM-01 logic.
     #[test]
     fn test_no_memory_declared() {
         let facts = parse_wasm("(module (func))");
@@ -309,8 +297,6 @@ mod tests {
         assert!(!facts.memory_has_max);
     }
 
-    /// Verifies deterministic sorting of exports by name.
-    /// Ensures stable output regardless of internal WASM section order.
     #[test]
     fn test_deterministic_export_sorting() {
         let facts = parse_wasm(
@@ -327,7 +313,6 @@ mod tests {
         assert_eq!(facts.exports[1].name, "z_export");
     }
 
-    /// Tests unbounded memory detection where no maximum pages are declared.
     #[test]
     fn test_unbounded_memory_detection() {
         let facts = parse_wasm(r#"(module (memory 1))"#);
@@ -337,7 +322,6 @@ mod tests {
         assert!(!facts.memory_has_max);
     }
 
-    /// Validates handling of the multi-memory feature, ensuring only index 0 is used for limits.
     #[test]
     fn test_multi_memory_feature_limits() {
         let facts = parse_wasm(
@@ -350,11 +334,10 @@ mod tests {
         );
 
         assert_eq!(facts.memory_count, 2);
-        assert_eq!(facts.memory_min_pages, Some(1)); // Locked to first memory
+        assert_eq!(facts.memory_min_pages, Some(1));
         assert_eq!(facts.memory_max_pages, Some(2));
     }
 
-    /// Validates mapping of various export types to their correct kind strings.
     #[test]
     fn test_export_kind_mapping() {
         let facts = parse_wasm(
@@ -385,7 +368,6 @@ mod tests {
         assert_eq!(kinds[3], ("e_table".to_string(), "table".to_string()));
     }
 
-    /// Ensures that an empty module produces the correct default "zero" invariants.
     #[test]
     fn test_empty_module_invariants() {
         let facts = parse_wasm(r#"(module)"#);

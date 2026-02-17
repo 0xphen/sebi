@@ -37,7 +37,6 @@ pub fn inspect(path: &Path, tool: ToolInfo) -> Result<Report> {
     let triggered = rules::eval::evaluate_rules(&signals, &artifact_ctx, &raw.config);
     let classification = rules::classify::classify(&triggered);
 
-    // Assemble report
     let report = Report::new(
         tool,
         artifact_ctx.into_artifact(),

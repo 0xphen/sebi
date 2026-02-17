@@ -77,16 +77,12 @@ pub fn parse_wasm(bytes: &[u8]) -> Result<RawWasmFacts> {
         ..Default::default()
     };
 
-    // `parse_all` is appropriate here because SEBI reads the full artifact
-    // into memory in `io::read` and performs deterministic offline analysis.
     let parser = Parser::new(0);
 
     for payload in parser.parse_all(bytes) {
         match payload {
-            // Module header/version. Presence indicates a well-formed WASM prefix.
             Ok(Payload::Version { .. }) => {}
 
-            // Section-level signals.
             Ok(Payload::ImportSection(reader)) => {
                 sections::on_import_section(&mut facts.sections, reader)?;
             }
@@ -103,11 +99,8 @@ pub fn parse_wasm(bytes: &[u8]) -> Result<RawWasmFacts> {
                 sections::on_export_section(&mut facts.sections, reader)?;
             }
 
-            // Code scanning (instruction-level signals).
-            Ok(Payload::CodeSectionStart { .. }) => {
-                // Optional: sanity-check that Function section count matches Code bodies.
-                // SEBI v1 does not require this; scanning uses the entry stream directly.
-            }
+            Ok(Payload::CodeSectionStart { .. }) => {}
+
             Ok(Payload::CodeSectionEntry(body)) => {
                 scan::on_code_entry(&mut facts.instructions, body)?;
             }
@@ -116,8 +109,6 @@ pub fn parse_wasm(bytes: &[u8]) -> Result<RawWasmFacts> {
             // names/producers/debug info do not contribute to execution-boundary signals.
             Ok(Payload::CustomSection(_)) => {}
 
-            // WebAssembly component model payloads are out of scope for SEBI v1.
-            // We mark analysis as unsupported to avoid implying full coverage.
             Ok(
                 other @ (Payload::ComponentSection { .. }
                 | Payload::ComponentTypeSection(_)
@@ -139,7 +130,6 @@ pub fn parse_wasm(bytes: &[u8]) -> Result<RawWasmFacts> {
 
             Ok(Payload::End(_)) => {}
 
-            // Any parse error is reported in analysis status and terminates parsing.
             Err(e) => {
                 facts.analysis = AnalysisInfo::parse_error(e.to_string());
                 break;
@@ -287,14 +277,11 @@ mod tests {
         assert!(facts.analysis.status == "unsupported" || facts.analysis.status == "parse_error");
     }
 
-    /// Ensures that saturating arithmetic prevents overflow when processing
-    /// modules with massive internal counts.
     #[test]
     fn test_saturating_arithmetic_limits() {
         let mut facts = RawWasmFacts::default();
         facts.sections.import_count = u32::MAX;
 
-        // Simulate an additional import discovery
         facts.sections.import_count = facts.sections.import_count.saturating_add(1);
 
         assert_eq!(facts.sections.import_count, u32::MAX);

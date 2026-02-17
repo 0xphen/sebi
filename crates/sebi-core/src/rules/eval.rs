@@ -121,7 +121,7 @@ pub fn evaluate_rules(
     out
 }
 
-/// Helper to construct a `TriggeredRule` from a `RuleDef`.
+/// construct a `TriggeredRule` from a `RuleDef`.
 fn build_trigger(
     def: crate::rules::catalog::RuleDef,
     evidence: serde_json::Value,

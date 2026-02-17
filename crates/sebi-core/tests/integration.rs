@@ -37,7 +37,6 @@ fn inspect_bytes(wasm: &[u8]) -> Report {
     sebi_core::inspect(tmp.path(), tool).expect("inspect should succeed")
 }
 
-/// Collects triggered rule IDs from a report.
 fn triggered_ids(report: &Report) -> Vec<String> {
     report
         .rules
@@ -47,7 +46,6 @@ fn triggered_ids(report: &Report) -> Vec<String> {
         .collect()
 }
 
-/// Checks whether a specific rule ID was triggered.
 fn has_rule(report: &Report, rule_id: &str) -> bool {
     report.rules.triggered.iter().any(|r| r.rule_id == rule_id)
 }
@@ -100,7 +98,6 @@ fn rust_loop_unbounded_mem_classified_risk() {
         "expected R-LOOP-01 triggered"
     );
 
-    // Should NOT trigger HIGH severity rules
     assert!(
         !has_rule(&report, "R-MEM-02"),
         "R-MEM-02 should not trigger"
@@ -183,12 +180,10 @@ fn cpp_vtable_erc20_signals_correct() {
     assert!(report.signals.instructions.has_call_indirect);
     assert!(report.signals.instructions.has_loop);
 
-    // Imports come from "env" module (C++ convention)
     let imports = report.signals.imports_exports.imports.as_ref().unwrap();
     assert!(imports.iter().all(|i| i.module == "env"));
     assert!(report.signals.imports_exports.import_count >= 5);
 
-    // Has many functions (8 ERC20 methods + malloc + decode + entrypoint + mark_used)
     assert!(report.signals.module.function_count >= 12);
 }
 
@@ -357,7 +352,6 @@ fn large_artifact_triggers_size_rule() {
     let report = inspect_bytes(&wasm);
 
     assert!(has_rule(&report, "R-SIZE-01"), "expected R-SIZE-01 to fire");
-    // Verify evidence contains the threshold and actual size
     let size_rule = report
         .rules
         .triggered
@@ -384,7 +378,6 @@ fn invalid_wasm_reports_parse_error() {
 
 #[test]
 fn deterministic_json_output_for_same_fixture() {
-    // Use the same temp file for both runs to ensure identical artifact.path.
     let wasm = compile_fixture("cpp_vtable_erc20.wat");
     let mut tmp = NamedTempFile::new().unwrap();
     tmp.write_all(&wasm).unwrap();
@@ -615,7 +608,6 @@ fn triggered_rule_ids_sorted_in_classification() {
         .map(|id| id.as_str().to_string())
         .collect();
 
-    // Verify consistent ordering: MEM rules first, then CALL, then LOOP
     assert_eq!(
         ids,
         vec!["R-MEM-01", "R-MEM-02", "R-CALL-01", "R-LOOP-01"],

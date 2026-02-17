@@ -192,7 +192,6 @@ mod tests {
     use crate::rules::eval::TriggeredRule;
     use serde_json::json;
 
-    // Minimal dummy signals for testing.
     fn dummy_signals() -> Signals {
         Signals {
             module: Default::default(),

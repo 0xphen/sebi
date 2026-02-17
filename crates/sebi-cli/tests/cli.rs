@@ -5,17 +5,13 @@ use predicates::prelude::*;
 use std::path::PathBuf;
 use tempfile::NamedTempFile;
 
-/// Path to the fixtures directory.
 fn fixtures_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("fixtures")
 }
 
-/// Helper to build a `sebi-cli` Command.
 fn sebi_cmd() -> Command {
     Command::cargo_bin("sebi-cli").expect("binary should be built")
 }
-
-// ─── Exit code tests ────────────────────────────────────────────────
 
 #[test]
 fn safe_contract_exits_0() {
@@ -64,8 +60,6 @@ fn high_risk_dex_router_exits_2() {
         .assert()
         .code(2);
 }
-
-// ─── JSON output format tests ───────────────────────────────────────
 
 #[test]
 fn json_output_is_valid() {
@@ -181,8 +175,6 @@ fn json_artifact_has_hash() {
     assert_eq!(hash.len(), 64, "SHA-256 hex should be 64 chars");
 }
 
-// ─── Text output format tests ───────────────────────────────────────
-
 #[test]
 fn text_output_contains_classification() {
     sebi_cmd()
@@ -207,8 +199,6 @@ fn text_output_shows_triggered_rules() {
         .stdout(predicate::str::contains("R-CALL-01"))
         .stdout(predicate::str::contains("R-LOOP-01"));
 }
-
-// ─── --out flag tests ───────────────────────────────────────────────
 
 #[test]
 fn out_flag_writes_to_file() {
@@ -248,8 +238,6 @@ fn out_flag_with_text_format() {
     assert!(contents.contains("R-LOOP-01"));
 }
 
-// ─── --commit flag tests ────────────────────────────────────────────
-
 #[test]
 fn commit_flag_embeds_hash_in_report() {
     let output = sebi_cmd()
@@ -273,8 +261,6 @@ fn no_commit_flag_leaves_null() {
     let parsed: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert!(parsed["tool"]["commit"].is_null());
 }
-
-// ─── Error handling tests ───────────────────────────────────────────
 
 #[test]
 fn missing_wasm_arg_fails() {
@@ -303,21 +289,13 @@ fn invalid_format_flag_fails() {
         .stderr(predicate::str::contains("invalid value"));
 }
 
-// ─── Determinism tests ──────────────────────────────────────────────
-
 #[test]
 fn deterministic_json_across_runs() {
     let fixture = fixtures_dir().join("cpp_token_bridge_complex.wasm");
 
-    let output_a = sebi_cmd()
-        .arg(&fixture)
-        .output()
-        .expect("first run");
+    let output_a = sebi_cmd().arg(&fixture).output().expect("first run");
 
-    let output_b = sebi_cmd()
-        .arg(&fixture)
-        .output()
-        .expect("second run");
+    let output_b = sebi_cmd().arg(&fixture).output().expect("second run");
 
     let json_a: serde_json::Value = serde_json::from_slice(&output_a.stdout).unwrap();
     let json_b: serde_json::Value = serde_json::from_slice(&output_b.stdout).unwrap();
@@ -328,10 +306,11 @@ fn deterministic_json_across_runs() {
     assert_eq!(json_a["rules"], json_b["rules"]);
     assert_eq!(json_a["classification"], json_b["classification"]);
     assert_eq!(json_a["artifact"]["hash"], json_b["artifact"]["hash"]);
-    assert_eq!(json_a["artifact"]["size_bytes"], json_b["artifact"]["size_bytes"]);
+    assert_eq!(
+        json_a["artifact"]["size_bytes"],
+        json_b["artifact"]["size_bytes"]
+    );
 }
-
-// ─── Help and version flags ─────────────────────────────────────────
 
 #[test]
 fn help_flag_prints_usage() {
@@ -339,7 +318,9 @@ fn help_flag_prints_usage() {
         .arg("--help")
         .assert()
         .success()
-        .stdout(predicate::str::contains("Static execution-boundary inspection"));
+        .stdout(predicate::str::contains(
+            "Static execution-boundary inspection",
+        ));
 }
 
 #[test]
@@ -350,8 +331,6 @@ fn version_flag_prints_version() {
         .success()
         .stdout(predicate::str::contains("sebi"));
 }
-
-// ─── Default format is JSON ─────────────────────────────────────────
 
 #[test]
 fn default_format_is_json() {
