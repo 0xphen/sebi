@@ -1,6 +1,6 @@
-# SEBI -- Stylus Execution Boundary Inspector
+# SEBI - Stylus Execution Boundary Inspector
 
-SEBI is a deterministic, static analysis engine for [Stylus](https://docs.arbitrum.io/stylus/gentle-introduction)-compiled WASM smart contracts. It inspects WebAssembly binaries **before deployment** to detect execution-boundary risks -- without executing the contract or relying on chain state.
+SEBI is a deterministic, static analysis engine for [Stylus](https://docs.arbitrum.io/stylus/gentle-introduction)-compiled WASM smart contracts. It inspects WebAssembly binaries **before deployment** to detect execution-boundary risks - without executing the contract or relying on chain state.
 
 SEBI produces stable, explainable JSON reports that help developers, auditors, and infrastructure providers reason about execution safety before a contract goes on-chain.
 
@@ -46,7 +46,7 @@ Triggered rules combine into a final risk verdict:
 | `RISK` | 1 | At least one MED severity rule triggered (no HIGH) |
 | `HIGH_RISK` | 2 | At least one HIGH severity rule triggered |
 
-The exit code makes SEBI directly usable as a CI gate -- a non-zero exit signals risk.
+The exit code makes SEBI directly usable as a CI gate - a non-zero exit signals risk.
 
 ## Getting Started
 
@@ -135,19 +135,13 @@ Embed a commit hash in the report metadata:
 sebi-cli contract.wasm --commit $(git rev-parse HEAD)
 ```
 
-Use as a CI gate (non-zero exit on risk):
-
-```sh
-sebi-cli contract.wasm || echo "Risk detected"
-```
-
 **Exit codes:**
 
 | Code | Meaning |
 |------|---------|
-| `0` | `SAFE` -- no MED or HIGH severity rules triggered |
-| `1` | `RISK` -- at least one MED severity rule triggered (no HIGH) |
-| `2` | `HIGH_RISK` -- at least one HIGH severity rule triggered |
+| `0` | `SAFE` - no MED or HIGH severity rules triggered |
+| `1` | `RISK` - at least one MED severity rule triggered (no HIGH) |
+| `2` | `HIGH_RISK` - at least one HIGH severity rule triggered |
 
 ### Library
 
@@ -181,12 +175,12 @@ std::process::exit(report.classification.exit_code);
 
 The `inspect` function runs the full pipeline:
 
-1. **Load** -- read the file and compute a SHA-256 hash
-2. **Parse** -- extract WASM sections and scan instructions
-3. **Extract** -- map raw facts to schema-stable signals
-4. **Evaluate** -- check signals against the rule catalog
-5. **Classify** -- derive a risk level and CI exit code
-6. **Report** -- assemble the final JSON report
+1. **Load** - read the file and compute a SHA-256 hash
+2. **Parse** - extract WASM sections and scan instructions
+3. **Extract** - map raw facts to schema-stable signals
+4. **Evaluate** - check signals against the rule catalog
+5. **Classify** - derive a risk level and CI exit code
+6. **Report** - assemble the final JSON report
 
 ## Report Format
 
@@ -229,9 +223,9 @@ Reports conform to the schema in [`docs/SCHEMA.md`](docs/SCHEMA.md):
 
 **Key properties:**
 
-- **Deterministic** -- identical artifacts always produce identical JSON
-- **No timestamps** -- reports contain no nondeterministic values
-- **Sorted arrays** -- imports, exports, triggered rules, and rule IDs are sorted deterministically
+- **Deterministic** - identical artifacts always produce identical JSON
+- **No timestamps** - reports contain no nondeterministic values
+- **Sorted arrays** - imports, exports, triggered rules, and rule IDs are sorted deterministically
 
 ## Project Structure
 
@@ -322,13 +316,6 @@ cargo test --package sebi-cli
 
 `sebi-cli` integration tests use pre-compiled WASM fixtures in `crates/sebi-cli/fixtures/` to test the binary end-to-end (exit codes, output formats, flag handling).
 
-## Design Principles
-
-- **Separation of concerns** -- parsing, signal extraction, rule evaluation, and classification are strictly isolated. Rules never parse WASM directly; they operate only on extracted signals.
-- **Determinism** -- identical input artifacts produce identical output. No timestamps, no nondeterministic ordering.
-- **Conservative analysis** -- SEBI favors false positives over silent misses. It flags structural capabilities, not confirmed intent.
-- **Explainability** -- every triggered rule includes structured evidence referencing specific schema paths.
-
 ## Non-Goals
 
 SEBI does **not** attempt to:
@@ -343,8 +330,8 @@ SEBI reports **structural execution-boundary signals only**.
 
 ## Documentation
 
-- [`docs/RULES.md`](docs/RULES.md) -- rule catalog: trigger conditions, severities, evidence, classification policy
-- [`docs/SCHEMA.md`](docs/SCHEMA.md) -- report schema: field specifications, types, determinism guarantees
+- [`docs/RULES.md`](docs/RULES.md) - rule catalog: trigger conditions, severities, evidence, classification policy
+- [`docs/SCHEMA.md`](docs/SCHEMA.md) - report schema: field specifications, types, determinism guarantees
 
 ## License
 
