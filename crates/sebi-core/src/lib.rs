@@ -1,4 +1,4 @@
-//! SEBI (Simple Execution Boundary Inspector)
+//! SEBI (Stylus Execution Boundary Inspector)
 //!
 //! Entry point for WASM artifact inspection and risk classification.
 

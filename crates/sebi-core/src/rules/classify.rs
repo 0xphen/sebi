@@ -54,7 +54,6 @@ pub fn classify(triggered: &[TriggeredRule]) -> ClassificationInfo {
         .cloned()
         .unwrap_or(Severity::Low);
 
-    // Apply default classification policy.
     let level = if triggered.iter().any(|r| r.severity == Severity::High) {
         ClassificationLevel::HighRisk
     } else if triggered.iter().any(|r| r.severity == Severity::Med) {
@@ -70,7 +69,6 @@ pub fn classify(triggered: &[TriggeredRule]) -> ClassificationInfo {
         ClassificationLevel::HighRisk => 2,
     };
 
-    // Sort rule IDs by their canonical string to ensure stable output.
     let mut triggered_rule_ids: Vec<_> = triggered.iter().map(|r| r.rule_id).collect();
     triggered_rule_ids.sort_by(|a, b| a.as_str().cmp(b.as_str()));
 

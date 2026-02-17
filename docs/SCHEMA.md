@@ -112,7 +112,7 @@ Identifies the producer of the report.
 
 | Field     | Type   | Required | Description                  |
 | --------- | ------ | -------- | ---------------------------- |
-| `name`    | string | yes      | Always `"sebi"`              |
+| `name`    | string | yes      | Tool name (e.g. `"sebi-cli"`) |
 | `version` | string | yes      | SEBI tool version            |
 | `commit`  | string | no       | Git commit hash of the build |
 
